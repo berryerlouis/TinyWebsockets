@@ -142,6 +142,7 @@ namespace websockets { namespace network {
 
   int linuxTcpServerInit(const size_t backlog, int port) {
     struct sockaddr_in serv_addr;
+    constexpr int yes = 1;
     
     // socket init
     auto sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -153,6 +154,11 @@ namespace websockets { namespace network {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
+
+    // set option
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+      return INVALID_SOCKET;
+    }
 
     // binding
     if (bind(sockfd, reinterpret_cast<struct sockaddr *>(&serv_addr), sizeof(serv_addr)) < 0) {
